@@ -12,18 +12,18 @@
             --bg-color-1: #ffdee9;
             --bg-color-2: #b5fffc;
             --bg-color-3: #fbc2eb;
-            --bg-color-4: #a1887f;
+            --bg-color-4: #e0c3fc;
         }
 
-        /* Полная блокировка скролла и жестов на уровне CSS */
+        /* Блокировка скролла и жестов */
         html, body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             height: 100%;
             width: 100%;
-            position: fixed; /* Фиксация предотвращает "резиновый" скролл в Safari */
-            touch-action: none; /* Отключает зум и скролл жестами */
+            position: fixed;
+            touch-action: none;
             -webkit-overflow-scrolling: none;
         }
 
@@ -32,11 +32,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(45deg, #ffdee9, #b5fffc, #fbc2eb, #e0c3fc);
+            /* Исправленный градиент */
+            background: linear-gradient(45deg, var(--bg-color-1), var(--bg-color-2), var(--bg-color-3), var(--bg-color-4));
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             -webkit-tap-highlight-color: transparent;
-            user-select: none; /* Запрет выделения текста для чистоты интерфейса */
+            user-select: none;
         }
 
         @keyframes gradientBG {
@@ -50,7 +51,7 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 30px;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             border: 1px solid rgba(255, 255, 255, 0.5);
@@ -123,7 +124,7 @@
             font-size: 2rem;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            touch-action: manipulation; /* Оптимизация для тапов */
+            touch-action: manipulation;
         }
 
         .btn-action:active {
@@ -166,7 +167,7 @@
         </div>
 
         <h1>С днём рождения, мама!</h1>
-        <p class="text-pink-600 font-medium">Ты самая лучшая в мире!</p>
+        <p class="text-pink-600 font-bold">Ты самая лучшая в мире!</p>
 
         <div class="controls">
             <button onclick="spawnBalloons()" class="btn-action btn-balloon" aria-label="Запустить шарики">
@@ -179,43 +180,27 @@
     </div>
 
     <script>
-        /**
-         * ЗАЩИТА ОТ ЗУМА И СКРОЛЛА (Safari iOS Focus)
-         */
-        
-        // 1. Блокировка масштабирования через жесты (pinch-to-zoom)
+        // Защита от зума и скролла для Safari
         document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
+            if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
 
-        // 2. Блокировка скролла и двойного тапа (zoom)
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault(); // Блокирует зум при двойном тапе
-            }
+            if (now - lastTouchEnd <= 300) e.preventDefault();
             lastTouchEnd = now;
         }, false);
 
-        // 3. Блокировка любого движения (скролла) страницы
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
 
-        // 4. Блокировка зума через колесико мыши (Ctrl + Wheel)
         document.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                e.preventDefault();
-            }
+            if (e.ctrlKey) e.preventDefault();
         }, { passive: false });
 
-        /**
-         * ЛОГИКА ПРАЗДНИКА
-         */
-
+        // Функции праздника
         function fireConfetti() {
             const count = 200;
             const defaults = {
