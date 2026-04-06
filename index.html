@@ -2,29 +2,25 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>С днём рождения, мама!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color-1: #ffdee9;
-            --bg-color-2: #b5fffc;
-            --bg-color-3: #fbc2eb;
-            --bg-color-4: #e0c3fc;
-        }
-
         /* Блокировка скролла и жестов */
         html, body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            height: 100%;
             width: 100%;
+            height: 100%;
+            overflow: hidden;
             position: fixed;
             touch-action: none;
-            -webkit-overflow-scrolling: none;
+            -webkit-user-select: none;
+            user-select: none;
+            /* Пастельный желтый фон */
+            background-color: #fff9c4; 
         }
 
         body {
@@ -32,29 +28,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Исправленный градиент */
-            background: linear-gradient(45deg, var(--bg-color-1), var(--bg-color-2), var(--bg-color-3), var(--bg-color-4));
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         .content-card {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 30px;
-            padding: 2.5rem 2rem;
+            padding: 2rem;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             width: 90%;
             max-width: 400px;
             position: relative;
@@ -67,16 +52,23 @@
             color: #d81b60;
             margin: 1rem 0;
             line-height: 1.2;
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
         }
 
+        #compliment-text {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Свечи */
         .candle {
             position: absolute;
             bottom: 60px;
             width: 30px;
             height: 80px;
         }
-
         .candle.left { left: -15px; transform: rotate(-5deg); }
         .candle.right { right: -15px; transform: rotate(5deg); }
 
@@ -105,41 +97,36 @@
             border-bottom: 2px solid #880e4f;
         }
 
+        /* Кнопки */
         .controls {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             margin-top: 2rem;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         .btn-action {
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1.8rem;
+            transition: transform 0.1s, box-shadow 0.2s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            touch-action: manipulation;
+            color: white;
         }
 
         .btn-action:active {
             transform: scale(0.9);
         }
 
-        .btn-balloon {
-            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
-            position: relative;
-        }
-        
-        .btn-popper {
-            background: linear-gradient(135deg, #7e57c2, #4527a0);
-            border-radius: 15px;
-        }
+        .btn-balloon { background: #ff5252; }
+        .btn-popper { background: #7e57c2; border-radius: 15px; }
+        .btn-compliment { background: #00bcd4; }
 
         .floating-balloon {
             position: absolute;
@@ -167,78 +154,85 @@
         </div>
 
         <h1>С днём рождения, мама!</h1>
-        <p class="text-pink-600 font-bold">Ты самая лучшая в мире!</p>
+        <div id="compliment-text">
+            <p class="text-pink-600 font-medium">Ты самая лучшая в мире! ❤️</p>
+        </div>
 
         <div class="controls">
-            <button onclick="spawnBalloons()" class="btn-action btn-balloon" aria-label="Запустить шарики">
-                🎈
-            </button>
-            <button onclick="fireConfetti()" class="btn-action btn-popper" aria-label="Запустить конфетти">
-                🎉
-            </button>
+            <!-- Кнопка Шарик -->
+            <button onclick="spawnBalloons()" class="btn-action btn-balloon" title="Шарики">🎈</button>
+            
+            <!-- Кнопка Комплимент -->
+            <button onclick="nextCompliment()" class="btn-action btn-compliment" title="Комплимент">🎁</button>
+
+            <!-- Кнопка Хлопушка -->
+            <button onclick="fireConfetti()" class="btn-action btn-popper" title="Конфетти">🎉</button>
         </div>
     </div>
 
     <script>
-        // Защита от зума и скролла для Safari
+        const compliments = [
+            "Ты самая лучшая в мире! ❤️",
+            "Ты самая добрая и нежная! ✨",
+            "Спасибо за твою теплоту! 🌸",
+            "Ты сияешь ярче всех звезд! 🌟",
+            "Ты самая красивая мама на свете! 🌹",
+            "Пусть каждый день будет сказкой! 🏰",
+        ];
+        
+        let currentIdx = 0;
+
+        function nextCompliment() {
+            const textElement = document.getElementById('compliment-text');
+            textElement.style.opacity = 0;
+            
+            setTimeout(() => {
+                currentIdx = (currentIdx + 1) % compliments.length;
+                textElement.innerHTML = `<p class="text-pink-600 font-medium">${compliments[currentIdx]}</p>`;
+                textElement.style.opacity = 1;
+            }, 300);
+        }
+
+        // Блокировка Safari жестов
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
 
+        document.addEventListener('touchmove', (e) => {
+            if (!e.target.closest('.btn-action')) e.preventDefault();
+        }, { passive: false });
+
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
-            const now = (new Date()).getTime();
+            const now = Date.now();
             if (now - lastTouchEnd <= 300) e.preventDefault();
             lastTouchEnd = now;
         }, false);
 
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-
-        document.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) e.preventDefault();
-        }, { passive: false });
-
-        // Функции праздника
         function fireConfetti() {
-            const count = 200;
-            const defaults = {
+            confetti({
+                particleCount: 150,
+                spread: 70,
                 origin: { y: 0.8 },
-                colors: ['#ff80ab', '#ff4081', '#f50057', '#b5fffc', '#fbc2eb']
-            };
-
-            function fire(particleRatio, opts) {
-                confetti({
-                    ...defaults,
-                    ...opts,
-                    particleCount: Math.floor(count * particleRatio)
-                });
-            }
-
-            fire(0.25, { spread: 26, startVelocity: 55 });
-            fire(0.2, { spread: 60 });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45 });
+                colors: ['#ff80ab', '#ffeb3b', '#00bcd4', '#7e57c2']
+            });
         }
 
         function spawnBalloons() {
-            const colors = ['#ff5252', '#40c4ff', '#ffeb3b', '#69f0ae', '#e040fb', '#ffab40'];
+            const colors = ['#ff5252', '#40c4ff', '#ffeb3b', '#69f0ae', '#e040fb'];
             for (let i = 0; i < 15; i++) {
                 setTimeout(() => {
                     const balloon = document.createElement('div');
                     balloon.className = 'floating-balloon';
-                    const size = Math.random() * (60 - 30) + 30;
-                    const left = Math.random() * 100;
+                    const size = Math.random() * 20 + 30;
+                    const left = Math.random() * 90 + 5;
                     const color = colors[Math.floor(Math.random() * colors.length)];
-                    const duration = Math.random() * (6 - 3) + 3;
+                    const duration = Math.random() * 2 + 3;
 
                     balloon.innerHTML = `
                         <svg width="${size}" height="${size * 1.2}" viewBox="0 0 30 40">
                             <path d="M15 0 C23 0 30 7 30 15 C30 23 23 30 15 30 C7 30 0 23 0 15 C0 7 7 0 15 0" fill="${color}" />
                             <path d="M15 30 L13 35 L17 35 Z" fill="${color}" />
-                            <path d="M15 35 Q15 40 18 40" stroke="#999" fill="none" stroke-width="0.5" />
                         </svg>
                     `;
                     
