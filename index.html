@@ -2,30 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>С днём рождения, мама!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Полная блокировка скролла и зума */
         :root {
             --bg-color-1: #ffdee9;
             --bg-color-2: #b5fffc;
             --bg-color-3: #fbc2eb;
-            --bg-color-4: #e0c3fc;
+            --bg-color-4: #a1887f;
         }
 
+        /* Полная блокировка скролла и жестов на уровне CSS */
         html, body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
-            position: fixed; /* Фиксируем всё окно */
-            touch-action: none; /* Отключаем жесты на уровне браузера */
-            -webkit-user-select: none;
-            user-select: none;
+            height: 100%;
+            width: 100%;
+            position: fixed; /* Фиксация предотвращает "резиновый" скролл в Safari */
+            touch-action: none; /* Отключает зум и скролл жестами */
+            -webkit-overflow-scrolling: none;
         }
 
         body {
@@ -33,10 +32,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(45deg, var(--bg-color-1), var(--bg-color-2), var(--bg-color-3), var(--bg-color-4));
+            background: linear-gradient(45deg, #ffdee9, #b5fffc, #fbc2eb, #e0c3fc);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             -webkit-tap-highlight-color: transparent;
+            user-select: none; /* Запрет выделения текста для чистоты интерфейса */
         }
 
         @keyframes gradientBG {
@@ -58,8 +58,6 @@
             max-width: 400px;
             position: relative;
             z-index: 10;
-            /* Разрешаем клики только по элементам управления */
-            touch-action: auto; 
         }
 
         h1 {
@@ -125,8 +123,7 @@
             font-size: 2rem;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            background: white;
-            z-index: 20;
+            touch-action: manipulation; /* Оптимизация для тапов */
         }
 
         .btn-action:active {
@@ -137,16 +134,7 @@
             background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
             position: relative;
         }
-        .btn-balloon::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            width: 2px;
-            height: 15px;
-            background: rgba(0,0,0,0.2);
-            left: 50%;
-        }
-
+        
         .btn-popper {
             background: linear-gradient(135deg, #7e57c2, #4527a0);
             border-radius: 15px;
@@ -181,57 +169,91 @@
         <p class="text-pink-600 font-medium">Ты самая лучшая в мире!</p>
 
         <div class="controls">
-            <button onclick="spawnBalloons()" class="btn-action btn-balloon">🎈</button>
-            <button onclick="fireConfetti()" class="btn-action btn-popper">🎉</button>
+            <button onclick="spawnBalloons()" class="btn-action btn-balloon" aria-label="Запустить шарики">
+                🎈
+            </button>
+            <button onclick="fireConfetti()" class="btn-action btn-popper" aria-label="Запустить конфетти">
+                🎉
+            </button>
         </div>
     </div>
 
     <script>
-        // JS блокировка зума и свайпов для iOS Safari
+        /**
+         * ЗАЩИТА ОТ ЗУМА И СКРОЛЛА (Safari iOS Focus)
+         */
+        
+        // 1. Блокировка масштабирования через жесты (pinch-to-zoom)
         document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) e.preventDefault();
-        }, { passive: false });
-
-        document.addEventListener('touchmove', (e) => {
-            // Разрешаем касания только если это кнопки, остальное блокируем
-            if (!e.target.closest('.btn-action')) {
+            if (e.touches.length > 1) {
                 e.preventDefault();
             }
         }, { passive: false });
 
+        // 2. Блокировка скролла и двойного тапа (zoom)
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
-            const now = Date.now();
+            const now = (new Date()).getTime();
             if (now - lastTouchEnd <= 300) {
-                e.preventDefault(); // Блокировка двойного тапа (зум)
+                e.preventDefault(); // Блокирует зум при двойном тапе
             }
             lastTouchEnd = now;
         }, false);
 
+        // 3. Блокировка любого движения (скролла) страницы
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 4. Блокировка зума через колесико мыши (Ctrl + Wheel)
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        /**
+         * ЛОГИКА ПРАЗДНИКА
+         */
+
         function fireConfetti() {
-            confetti({
-                particleCount: 150,
-                spread: 70,
+            const count = 200;
+            const defaults = {
                 origin: { y: 0.8 },
-                colors: ['#ff80ab', '#ff4081', '#fbc2eb', '#b5fffc']
-            });
+                colors: ['#ff80ab', '#ff4081', '#f50057', '#b5fffc', '#fbc2eb']
+            };
+
+            function fire(particleRatio, opts) {
+                confetti({
+                    ...defaults,
+                    ...opts,
+                    particleCount: Math.floor(count * particleRatio)
+                });
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
         }
 
         function spawnBalloons() {
-            const colors = ['#ff5252', '#40c4ff', '#ffeb3b', '#69f0ae', '#e040fb'];
+            const colors = ['#ff5252', '#40c4ff', '#ffeb3b', '#69f0ae', '#e040fb', '#ffab40'];
             for (let i = 0; i < 15; i++) {
                 setTimeout(() => {
                     const balloon = document.createElement('div');
                     balloon.className = 'floating-balloon';
-                    const size = Math.random() * 30 + 30;
-                    const left = Math.random() * 90 + 5;
+                    const size = Math.random() * (60 - 30) + 30;
+                    const left = Math.random() * 100;
                     const color = colors[Math.floor(Math.random() * colors.length)];
-                    const duration = Math.random() * 3 + 3;
+                    const duration = Math.random() * (6 - 3) + 3;
 
                     balloon.innerHTML = `
                         <svg width="${size}" height="${size * 1.2}" viewBox="0 0 30 40">
                             <path d="M15 0 C23 0 30 7 30 15 C30 23 23 30 15 30 C7 30 0 23 0 15 C0 7 7 0 15 0" fill="${color}" />
                             <path d="M15 30 L13 35 L17 35 Z" fill="${color}" />
+                            <path d="M15 35 Q15 40 18 40" stroke="#999" fill="none" stroke-width="0.5" />
                         </svg>
                     `;
                     
