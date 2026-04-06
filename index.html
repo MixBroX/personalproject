@@ -15,8 +15,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            position: fixed; /* Фиксируем, чтобы нельзя было тянуть страницу */
-            touch-action: none; /* Отключаем жесты браузера */
+            position: fixed;
+            touch-action: none;
             -webkit-user-select: none;
             user-select: none;
         }
@@ -26,14 +26,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Насыщенный переливающийся градиент */
-            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #ffd1ff, #a1c4fd, #c2e9fb);
+            
+            /* Обновленный градиент с поддержкой Safari */
+            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffd1ff, #a1c4fd);
             background-size: 400% 400%;
-            animation: gradientBG 10s ease-in-out infinite;
+            
+            /* Анимация с вендорными префиксами */
+            -webkit-animation: gradientBG 15s ease infinite;
+            animation: gradientBG 15s ease infinite;
+            
+            /* Оптимизация для мобильных браузеров */
+            will-change: background-position;
             -webkit-tap-highlight-color: transparent;
         }
 
         /* Анимация перелива фона */
+        @-webkit-keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -53,7 +66,7 @@
             max-width: 380px;
             position: relative;
             z-index: 10;
-            touch-action: auto; /* Разрешаем нажатия на кнопки внутри */
+            touch-action: auto;
         }
 
         h1 {
@@ -186,6 +199,7 @@
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.content-card')) return;
             e.preventDefault();
         }, { passive: false });
 
