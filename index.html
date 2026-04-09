@@ -3,572 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>MixPoint</title>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <title>С днём рождения, мама!</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        mixgreen: { 400: '#34d399', 500: '#10b981', 600: '#059669' },
-                        glass: 'rgba(20, 25, 20, 0.65)'
-                    },
-                    height: { screen: '100dvh' },
-                    minHeight: { screen: '100dvh' }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Блокировка скролла и жестов */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            /* Пастельный желтый фон */
+            background-color: #fff9c4; 
+        }
+
         body {
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc;
-            overflow: hidden; /* Prevent pull-to-refresh and bouncy scroll on iOS */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Custom scrollbar for places list */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        
-        .pulse-animation {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            z-index: 10;
         }
-        @keyframes pulse-ring {
-            100% { box-shadow: 0 0 0 40px rgba(16, 185, 129, 0); }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 2.5rem;
+            color: #d81b60;
+            margin: 1rem 0;
+            line-height: 1.2;
+        }
+
+        #compliment-text {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Свечи */
+        .candle {
+            position: absolute;
+            bottom: 60px;
+            width: 30px;
+            height: 80px;
+        }
+        .candle.left { left: -15px; transform: rotate(-5deg); }
+        .candle.right { right: -15px; transform: rotate(5deg); }
+
+        .flame {
+            width: 12px;
+            height: 20px;
+            background: #ff9800;
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -15px;
+            left: 9px;
+            animation: flicker 0.1s infinite alternate;
+            box-shadow: 0 0 10px #ffeb3b, 0 0 20px #ff9800;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) skewX(2deg); opacity: 0.9; }
+            100% { transform: scale(1.1) skewX(-2deg); opacity: 1; }
+        }
+
+        .candle-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #ff80ab, #f06292);
+            border-radius: 4px;
+            border-bottom: 2px solid #880e4f;
+        }
+
+        /* Кнопки */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        .btn-action:active {
+            transform: scale(0.9);
+        }
+
+        .btn-balloon { background: #ff5252; }
+        .btn-popper { background: #7e57c2; border-radius: 15px; }
+        .btn-compliment { background: #00bcd4; }
+
+        .floating-balloon {
+            position: absolute;
+            bottom: -100px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120vh) rotate(20deg); opacity: 0.8; }
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div class="content-card">
+        <div class="candle left">
+            <div class="flame"></div>
+            <div class="candle-body"></div>
+        </div>
+        <div class="candle right">
+            <div class="flame"></div>
+            <div class="candle-body"></div>
+        </div>
 
-        // Environment variables provided by Canvas (or defaults for Vercel)
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            // REPLACE THESE WITH YOUR ACTUAL FIREBASE CONFIG FOR VERCEL DEPLOYMENT
-            apiKey: "AIzaSyYourApiKeyHere",
-            authDomain: "your-app.firebaseapp.com",
-            projectId: "your-app-id",
-            storageBucket: "your-app.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:12345:web:abcde"
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mixpoint-production';
+        <h1>С днём рождения, мама!</h1>
+        <div id="compliment-text">
+            <p class="text-pink-600 font-medium">Ты самая лучшая в мире! ❤️</p>
+        </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Expose to React via window
-        window.firebaseServices = { auth, db, appId, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp };
-    </script>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        // --- ICON COMPONENTS ---
-        const MapIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>;
-        const ListIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>;
-        const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
-        const LogOutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
-        const CompassIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>;
-        const ArrowUpIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>;
-        const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
-
-        // --- MATH HELPERS ---
-        const toRad = (value) => value * Math.PI / 180;
-        const toDeg = (value) => value * 180 / Math.PI;
-
-        const calcDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371e3; // Earth radius in meters
-            const dLat = toRad(lat2 - lat1);
-            const dLon = toRad(lon2 - lon1);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        };
-
-        const calcBearing = (lat1, lon1, lat2, lon2) => {
-            const dLon = toRad(lon2 - lon1);
-            const y = Math.sin(dLon) * Math.cos(toRad(lat2));
-            const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
-                      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
-            let brng = Math.atan2(y, x);
-            return (toDeg(brng) + 360) % 360;
-        };
-
-        const generateRandomPoint = (lat, lon, minRadius, maxRadius) => {
-            const R = 6371e3; // Earth radius
-            // Random distance between min and max radius
-            const distance = minRadius + Math.random() * (maxRadius - minRadius);
-            const angle = Math.random() * 2 * Math.PI; // Random angle 0-360
-
-            const lat1 = toRad(lat);
-            const lon1 = toRad(lon);
-
-            const lat2 = Math.asin(
-                Math.sin(lat1) * Math.cos(distance/R) +
-                Math.cos(lat1) * Math.sin(distance/R) * Math.cos(angle)
-            );
-            const lon2 = lon1 + Math.atan2(
-                Math.sin(angle) * Math.sin(distance/R) * Math.cos(lat1),
-                Math.cos(distance/R) - Math.sin(lat1) * Math.sin(lat2)
-            );
-
-            return { lat: toDeg(lat2), lon: toDeg(lon2) };
-        };
-
-        // --- MAIN APP COMPONENT ---
-        const App = () => {
-            const [isFirebaseLoaded, setIsFirebaseLoaded] = useState(false);
-            const [user, setUser] = useState(null);
-            const [isGoogleUser, setIsGoogleUser] = useState(false);
-            const [tab, setTab] = useState('map'); // 'map', 'places'
+        <div class="controls">
+            <!-- Кнопка Шарик -->
+            <button onclick="spawnBalloons()" class="btn-action btn-balloon" title="Шарики">🎈</button>
             
-            // Location & Game State
-            const [currentLocation, setCurrentLocation] = useState(null);
-            const [heading, setHeading] = useState(0); // Device compass heading
-            const [targetLocation, setTargetLocation] = useState(null);
-            const [status, setStatus] = useState('idle'); // 'idle', 'navigating', 'arrived'
-            const [radius, setRadius] = useState(1000); // 1km default
-            const [places, setPlaces] = useState([]);
-            const [geoError, setGeoError] = useState(null);
+            <!-- Кнопка Комплимент -->
+            <button onclick="nextCompliment()" class="btn-action btn-compliment" title="Комплимент">🎁</button>
 
-            const SUCCESS_DISTANCE = 30; // Meters
+            <!-- Кнопка Хлопушка -->
+            <button onclick="fireConfetti()" class="btn-action btn-popper" title="Конфетти">🎉</button>
+        </div>
+    </div>
 
-            // Wait for Firebase to load from CDN
-            useEffect(() => {
-                const checkFirebase = setInterval(() => {
-                    if (window.firebaseServices) {
-                        setIsFirebaseLoaded(true);
-                        clearInterval(checkFirebase);
-                    }
-                }, 100);
-                return () => clearInterval(checkFirebase);
-            }, []);
+    <script>
+        const compliments = [
+            "Ты самая лучшая в мире! ❤️",
+            "Ты самая добрая и нежная! ✨",
+            "Спасибо за твою теплоту! 🌸",
+            "Ты сияешь ярче всех звезд! 🌟",
+            "Ты самая красивая мама на свете! 🌹",
+            "Пусть каждый день будет сказкой! 🏰",
+        ];
+        
+        let currentIdx = 0;
 
-            // Initialize Auth
-            useEffect(() => {
-                if (!isFirebaseLoaded) return;
-                const { auth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = window.firebaseServices;
+        function nextCompliment() {
+            const textElement = document.getElementById('compliment-text');
+            textElement.style.opacity = 0;
+            
+            setTimeout(() => {
+                currentIdx = (currentIdx + 1) % compliments.length;
+                textElement.innerHTML = `<p class="text-pink-600 font-medium">${compliments[currentIdx]}</p>`;
+                textElement.style.opacity = 1;
+            }, 300);
+        }
 
-                const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else if (!auth.currentUser) {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (e) {
-                        console.error("Auth init error", e);
-                    }
-                };
-                
-                initAuth();
+        // Блокировка Safari жестов
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
 
-                const unsubscribe = onAuthStateChanged(auth, (u) => {
-                    setUser(u);
-                    // Check if it's an actual linked account (Google) or anonymous
-                    setIsGoogleUser(u && !u.isAnonymous);
-                });
+        document.addEventListener('touchmove', (e) => {
+            if (!e.target.closest('.btn-action')) e.preventDefault();
+        }, { passive: false });
 
-                return () => unsubscribe();
-            }, [isFirebaseLoaded]);
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
 
-            // Fetch Places
-            useEffect(() => {
-                if (!isFirebaseLoaded || !user) return;
-                const { db, appId, collection, query, onSnapshot, orderBy } = window.firebaseServices;
+        function fireConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.8 },
+                colors: ['#ff80ab', '#ffeb3b', '#00bcd4', '#7e57c2']
+            });
+        }
 
-                const placesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'places');
-                const q = query(placesRef, orderBy('createdAt', 'desc'));
+        function spawnBalloons() {
+            const colors = ['#ff5252', '#40c4ff', '#ffeb3b', '#69f0ae', '#e040fb'];
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'floating-balloon';
+                    const size = Math.random() * 20 + 30;
+                    const left = Math.random() * 90 + 5;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const duration = Math.random() * 2 + 3;
 
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const loadedPlaces = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    setPlaces(loadedPlaces);
-                }, (error) => {
-                    console.error("Error fetching places", error);
-                });
-
-                return () => unsubscribe();
-            }, [isFirebaseLoaded, user]);
-
-            // Geolocation Tracking
-            useEffect(() => {
-                if (!navigator.geolocation) {
-                    setGeoError("Геолокация не поддерживается вашим устройством");
-                    return;
-                }
-
-                const watchId = navigator.geolocation.watchPosition(
-                    (position) => {
-                        setGeoError(null);
-                        setCurrentLocation({
-                            lat: position.coords.latitude,
-                            lon: position.coords.longitude,
-                            accuracy: position.coords.accuracy
-                        });
-                        
-                        // Fallback heading calculation if device compass isn't available
-                        if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
-                            setHeading(position.coords.heading);
-                        }
-                    },
-                    (error) => {
-                        console.error(error);
-                        setGeoError("Разрешите доступ к геолокации для работы радара");
-                    },
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-                );
-
-                // Device orientation (Compass) for Safari/Mobile
-                const handleOrientation = (event) => {
-                    if (event.webkitCompassHeading) {
-                        // iOS
-                        setHeading(event.webkitCompassHeading);
-                    } else if (event.alpha) {
-                        // Android
-                        // Requires calibration and specific logic, simplified here
-                        setHeading(360 - event.alpha);
-                    }
-                };
-
-                // Request permission for iOS 13+ devices
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                     // Need user interaction to request this, usually handled by a button click.
-                     // We'll attach it silently, if it works, great.
-                     window.addEventListener('deviceorientation', handleOrientation);
-                } else {
-                    window.addEventListener('deviceorientationabsolute', handleOrientation);
-                    window.addEventListener('deviceorientation', handleOrientation);
-                }
-
-                return () => {
-                    navigator.geolocation.clearWatch(watchId);
-                    window.removeEventListener('deviceorientation', handleOrientation);
-                    window.removeEventListener('deviceorientationabsolute', handleOrientation);
-                };
-            }, []);
-
-            // Navigation Logic (Check Distance)
-            useEffect(() => {
-                if (status === 'navigating' && currentLocation && targetLocation) {
-                    const dist = calcDistance(
-                        currentLocation.lat, currentLocation.lon,
-                        targetLocation.lat, targetLocation.lon
-                    );
+                    balloon.innerHTML = `
+                        <svg width="${size}" height="${size * 1.2}" viewBox="0 0 30 40">
+                            <path d="M15 0 C23 0 30 7 30 15 C30 23 23 30 15 30 C7 30 0 23 0 15 C0 7 7 0 15 0" fill="${color}" />
+                            <path d="M15 30 L13 35 L17 35 Z" fill="${color}" />
+                        </svg>
+                    `;
                     
-                    if (dist <= SUCCESS_DISTANCE) {
-                        setStatus('arrived');
-                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                    }
-                }
-            }, [currentLocation, targetLocation, status]);
-
-
-            // Handlers
-            const handleGoogleLogin = async () => {
-                if (!isFirebaseLoaded) return;
-                const { auth, signInWithPopup, GoogleAuthProvider } = window.firebaseServices;
-                const provider = new GoogleAuthProvider();
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    console.error("Google login failed", error);
-                    // Usually iframe restrictions in canvas.
-                    alert("Вход через Google может быть заблокирован в режиме предпросмотра. Разверните приложение для полного доступа.");
-                }
-            };
-
-            const handleLogout = async () => {
-                if (!isFirebaseLoaded) return;
-                const { auth, signOut, signInAnonymously } = window.firebaseServices;
-                await signOut(auth);
-                await signInAnonymously(auth); // Re-authenticate anonymously for canvas to work
-            };
-
-            const startNavigation = () => {
-                if (!currentLocation) {
-                    alert("Ожидание GPS...");
-                    return;
-                }
-                if (navigator.vibrate) navigator.vibrate(50);
-                
-                // Min radius is 10% of selected max radius
-                const target = generateRandomPoint(currentLocation.lat, currentLocation.lon, radius * 0.1, radius);
-                setTargetLocation(target);
-                setStatus('navigating');
-            };
-
-            const cancelNavigation = () => {
-                setStatus('idle');
-                setTargetLocation(null);
-            };
-
-            const savePlace = async (note) => {
-                if (!isFirebaseLoaded || !user) return;
-                const { db, appId, collection, addDoc, serverTimestamp } = window.firebaseServices;
-                
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'places'), {
-                        note: note || "Таинственное место",
-                        lat: targetLocation.lat,
-                        lon: targetLocation.lon,
-                        createdAt: serverTimestamp()
-                    });
-                    setStatus('idle');
-                    setTargetLocation(null);
-                    setTab('places');
-                } catch (e) {
-                    console.error("Error saving place", e);
-                }
-            };
-
-            // Calculate active UI variables
-            const currentDistance = useMemo(() => {
-                if (!currentLocation || !targetLocation) return 0;
-                return calcDistance(currentLocation.lat, currentLocation.lon, targetLocation.lat, targetLocation.lon);
-            }, [currentLocation, targetLocation]);
-
-            const arrowRotation = useMemo(() => {
-                if (!currentLocation || !targetLocation) return 0;
-                const targetBearing = calcBearing(currentLocation.lat, currentLocation.lon, targetLocation.lat, targetLocation.lon);
-                // Arrow should point to target, compensating for device heading
-                return targetBearing - heading;
-            }, [currentLocation, targetLocation, heading]);
-
-
-            if (!isFirebaseLoaded) {
-                return <div className="h-screen w-full flex items-center justify-center bg-[#0f172a] text-mixgreen-400">Инициализация...</div>;
+                    balloon.style.left = left + 'vw';
+                    balloon.style.animation = `floatUp ${duration}s linear forwards`;
+                    
+                    document.body.appendChild(balloon);
+                    setTimeout(() => balloon.remove(), duration * 1000);
+                }, i * 150);
             }
+        }
 
-            return (
-                <div className="flex flex-col h-screen w-full relative">
-                    {/* Background Visuals */}
-                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-mixgreen-500/10 rounded-full blur-[80px]"></div>
-                        <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-500/10 rounded-full blur-[100px]"></div>
-                    </div>
-
-                    {/* Top Bar */}
-                    <header className="z-20 w-full px-4 py-3 flex justify-between items-center bg-glass backdrop-blur-md border-b border-white/5 safe-top">
-                        <div className="flex items-center space-x-2">
-                            <span className="text-mixgreen-400 text-xl backdrop-blur-sm bg-black/20 px-2 py-1 rounded-lg font-bold tracking-wider">
-                                📍MixPoint
-                            </span>
-                        </div>
-                        <div>
-                            {isGoogleUser ? (
-                                <button onClick={handleLogout} className="flex items-center space-x-1 text-sm bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors">
-                                    <LogOutIcon />
-                                    <span>Выйти</span>
-                                </button>
-                            ) : (
-                                <button onClick={handleGoogleLogin} className="flex items-center space-x-1 text-sm bg-mixgreen-600 hover:bg-mixgreen-500 text-white px-3 py-1.5 rounded-full transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                                    <UserIcon />
-                                    <span>Войти</span>
-                                </button>
-                            )}
-                        </div>
-                    </header>
-
-                    {/* Main Content Area */}
-                    <main className="flex-1 overflow-hidden z-10 relative">
-                        {geoError && (
-                            <div className="absolute top-4 left-4 right-4 bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-xl backdrop-blur-md text-sm text-center z-50">
-                                {geoError}
-                            </div>
-                        )}
-
-                        {/* --- TAB: MAP --- */}
-                        {tab === 'map' && (
-                            <div className="h-full flex flex-col items-center justify-center p-6 pb-24">
-                                
-                                {status === 'idle' && (
-                                    <div className="flex flex-col items-center w-full max-w-sm space-y-12 animate-in fade-in duration-500">
-                                        <div className="text-center space-y-2">
-                                            <h2 className="text-2xl font-light text-slate-300">Настройка хаоса</h2>
-                                            <p className="text-slate-500 text-sm">Выбери радиус блужданий</p>
-                                        </div>
-
-                                        <div className="w-full space-y-4 bg-white/5 p-6 rounded-3xl backdrop-blur-sm border border-white/5">
-                                            <div className="flex justify-between text-mixgreen-400 font-medium">
-                                                <span>~ {Math.round(radius / 80)} мин</span>
-                                                <span>{radius >= 1000 ? (radius/1000).toFixed(1) + ' км' : radius + ' м'}</span>
-                                            </div>
-                                            <input 
-                                                type="range" 
-                                                min="300" 
-                                                max="5000" 
-                                                step="100"
-                                                value={radius} 
-                                                onChange={(e) => setRadius(Number(e.target.value))}
-                                                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-mixgreen-500"
-                                            />
-                                        </div>
-
-                                        <button 
-                                            onClick={startNavigation}
-                                            disabled={!currentLocation}
-                                            className={`relative w-40 h-40 rounded-full flex items-center justify-center bg-mixgreen-600 transition-all ${currentLocation ? 'pulse-animation hover:scale-105 active:scale-95' : 'opacity-50 grayscale'}`}
-                                        >
-                                            <div className="absolute inset-2 rounded-full border-2 border-white/20"></div>
-                                            <span className="text-white text-2xl tracking-widest font-medium">ПУЛЬС</span>
-                                        </button>
-                                    </div>
-                                )}
-
-                                {status === 'navigating' && (
-                                    <div className="flex flex-col items-center w-full space-y-8 animate-in zoom-in-95 duration-500">
-                                        <div className="text-center">
-                                            <p className="text-slate-400 uppercase tracking-widest text-xs mb-2">Следуй сигналу</p>
-                                            <div className="text-5xl font-light text-white tabular-nums tracking-tight">
-                                                {Math.round(currentDistance)} <span className="text-2xl text-mixgreen-500">м</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="relative w-64 h-64 flex items-center justify-center bg-white/5 rounded-full backdrop-blur-md border border-white/10 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
-                                            {/* Radar rings */}
-                                            <div className="absolute inset-4 rounded-full border border-white/5"></div>
-                                            <div className="absolute inset-12 rounded-full border border-white/5"></div>
-                                            
-                                            {/* Compass Arrow */}
-                                            <div 
-                                                className="text-mixgreen-400 transition-transform duration-500 ease-out drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]"
-                                                style={{ transform: `rotate(${arrowRotation}deg)` }}
-                                            >
-                                                <ArrowUpIcon />
-                                            </div>
-                                        </div>
-
-                                        <button 
-                                            onClick={cancelNavigation}
-                                            className="text-slate-400 hover:text-white px-6 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm text-sm mt-8"
-                                        >
-                                            Прервать маршрут
-                                        </button>
-                                    </div>
-                                )}
-
-                                {status === 'arrived' && (
-                                    <ArrivedScreen onSave={savePlace} />
-                                )}
-                            </div>
-                        )}
-
-                        {/* --- TAB: PLACES --- */}
-                        {tab === 'places' && (
-                            <div className="h-full flex flex-col p-4 pb-24 overflow-y-auto">
-                                <h2 className="text-2xl font-light mb-6 text-slate-200 px-2 pt-4">Мои находки</h2>
-                                
-                                {!isGoogleUser && places.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 opacity-60">
-                                        <CompassIcon />
-                                        <p className="text-slate-400 max-w-[250px]">Войди в аккаунт, чтобы сохранять свои открытия навсегда.</p>
-                                    </div>
-                                ) : places.length === 0 ? (
-                                    <div className="text-center text-slate-500 mt-10">
-                                        Ты еще не открыл ни одной локации. Нажми ПУЛЬС!
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {places.map((place) => (
-                                            <div key={place.id} className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="text-mixgreen-400 text-xs font-mono bg-mixgreen-500/10 px-2 py-1 rounded">
-                                                        {place.lat.toFixed(4)}, {place.lon.toFixed(4)}
-                                                    </div>
-                                                    <div className="text-slate-500 text-xs">
-                                                        {place.createdAt?.toDate().toLocaleDateString('ru-RU')}
-                                                    </div>
-                                                </div>
-                                                <p className="text-slate-200">{place.note}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </main>
-
-                    {/* Bottom Navigation */}
-                    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-glass backdrop-blur-xl border-t border-white/10 pb-safe">
-                        <div className="flex justify-around items-center h-20 px-6">
-                            <button 
-                                onClick={() => setTab('map')}
-                                className={`flex flex-col items-center justify-center w-20 space-y-1 transition-colors ${tab === 'map' ? 'text-mixgreen-400' : 'text-slate-500 hover:text-slate-300'}`}
-                            >
-                                <MapIcon />
-                                <span className="text-[10px] uppercase tracking-wider font-medium">Радар</span>
-                            </button>
-                            <button 
-                                onClick={() => setTab('places')}
-                                className={`flex flex-col items-center justify-center w-20 space-y-1 transition-colors ${tab === 'places' ? 'text-mixgreen-400' : 'text-slate-500 hover:text-slate-300'}`}
-                            >
-                                <ListIcon />
-                                <span className="text-[10px] uppercase tracking-wider font-medium">Места</span>
-                            </button>
-                        </div>
-                    </nav>
-                </div>
-            );
+        window.onload = () => {
+            setTimeout(fireConfetti, 500);
         };
-
-        // Sub-component for Arrived state to handle input properly
-        const ArrivedScreen = ({ onSave }) => {
-            const [note, setNote] = useState("");
-
-            return (
-                <div className="flex flex-col items-center w-full max-w-sm space-y-6 animate-in slide-in-from-bottom-10 duration-500 bg-white/5 p-8 rounded-[2rem] backdrop-blur-lg border border-mixgreen-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                    <div className="text-mixgreen-400">
-                        <CheckCircleIcon />
-                    </div>
-                    <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-medium text-white">Точка достигнута</h2>
-                        <p className="text-slate-400 text-sm">Осмотрись. Что здесь интересного?</p>
-                    </div>
-
-                    <textarea
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        placeholder="Например: Тут пахнет булочками..."
-                        className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-mixgreen-500 resize-none h-28"
-                    />
-
-                    <button 
-                        onClick={() => onSave(note)}
-                        className="w-full py-4 bg-mixgreen-600 hover:bg-mixgreen-500 text-white rounded-xl font-medium tracking-wide transition-colors"
-                    >
-                        Зафиксировать эхо
-                    </button>
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
     </script>
 </body>
 </html>
